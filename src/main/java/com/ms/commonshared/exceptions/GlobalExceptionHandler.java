@@ -27,37 +27,37 @@ import java.util.stream.Collectors;
 @Slf4j
 public class GlobalExceptionHandler extends ResponseEntityExceptionHandler {
 
-	@Autowired
-	MessageSource messageSource;
+    @Autowired
+    MessageSource messageSource;
 
-	@ExceptionHandler(ServiceException.class)
-	public ResponseEntity<ErrorResponseDto<?>> handle(ServiceException ex) {
-		String errorCode = ex.getErrorCode();
-		String errorMessage = null;
-		ErrorResponseDto<?> errorResponseDto = null;
-		HttpStatus httpStatus = ex.getHttpStatus();
-		errorMessage = messageSource.getMessage(errorCode, null, null);
-		if (StringUtils.hasLength(errorMessage)) {
-			errorResponseDto = new ErrorResponseDto<>(errorCode, ex.getData(), errorMessage);
-		} else {
-			errorMessage = errorCode;
-			errorResponseDto = new ErrorResponseDto<>(errorMessage);
-		}
-		log.error("Service Exception | errorCode : {} | errorMessage : {} | httpStatus : {}", errorCode, errorMessage,
-				httpStatus);
-		return ResponseEntity.status(httpStatus).body(errorResponseDto);
-	}
+    @ExceptionHandler(ServiceException.class)
+    public ResponseEntity<ErrorResponseDto<?>> handle(ServiceException ex) {
+        String errorCode = ex.getErrorCode();
+        String errorMessage = null;
+        ErrorResponseDto<?> errorResponseDto = null;
+        HttpStatus httpStatus = ex.getHttpStatus();
+        errorMessage = messageSource.getMessage(errorCode, null, null);
+        if (StringUtils.hasLength(errorMessage)) {
+            errorResponseDto = new ErrorResponseDto<>(errorCode, ex.getData(), errorMessage);
+        } else {
+            errorMessage = errorCode;
+            errorResponseDto = new ErrorResponseDto<>(errorMessage);
+        }
+        log.error("Service Exception | errorCode : {} | errorMessage : {} | httpStatus : {}", errorCode, errorMessage,
+                httpStatus);
+        return ResponseEntity.status(httpStatus).body(errorResponseDto);
+    }
 
-	@ExceptionHandler(AuthenticationException.class)
-	public ResponseEntity<ErrorResponseDto> handleAuthenticationException(AuthenticationException ex,
-			HttpServletResponse response) {
-		List<String> errors = new ArrayList<>();
-		errors.add(ex.getMessage());
-		ErrorResponseDto errorResponseDto = new ErrorResponseDto();
-		errorResponseDto.setMessage(errors);
-		response.setStatus(HttpStatus.UNAUTHORIZED.value());
-		return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(errorResponseDto);
-	}
+    @ExceptionHandler(AuthenticationException.class)
+    public ResponseEntity<ErrorResponseDto<?>> handleAuthenticationException(AuthenticationException ex,
+                                                                          HttpServletResponse response) {
+        List<String> errors = new ArrayList<>();
+        errors.add(ex.getMessage());
+        ErrorResponseDto<?> errorResponseDto = new ErrorResponseDto<>();
+        errorResponseDto.setMessage(errors);
+        response.setStatus(HttpStatus.UNAUTHORIZED.value());
+        return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(errorResponseDto);
+    }
 
 //	@ExceptionHandler( AuthenticationException.class )
 //	public ResponseEntity<ErrorResponseDto> handleSecurityAccessDeniedException(AuthenticationException exception,
@@ -109,22 +109,22 @@ public class GlobalExceptionHandler extends ResponseEntityExceptionHandler {
 //		return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(errorResponseDto);
 //	}
 
-	@Override
-	protected ResponseEntity<Object> handleMethodArgumentNotValid(MethodArgumentNotValidException ex,
-																  HttpHeaders headers, HttpStatusCode status, WebRequest request) {
-		log.error("Request Validation failed");
-		List<String> validationList = ex.getBindingResult().getFieldErrors().stream()
-				.map(fieldError -> fieldError.getField() + " : " + fieldError.getDefaultMessage())
-				.collect(Collectors.toList());
-		log.error("Validation error list : " + validationList);
-		String errorCode = "VE_101";
-		List<String> errorMessage = CollectionUtils.isEmpty(validationList)
-				? Collections.singletonList("Error in validating fields")
-				: validationList;
-		ErrorResponseDto<?> errorResponseDto = new ErrorResponseDto<>(errorCode, errorMessage);
-		log.error("Service Exception | errorCode : {} | errorMessage : {} ", errorCode, errorMessage);
-		return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(errorResponseDto);
-	}
+    @Override
+    protected ResponseEntity<Object> handleMethodArgumentNotValid(MethodArgumentNotValidException ex,
+                                                                  HttpHeaders headers, HttpStatusCode status, WebRequest request) {
+        log.error("Request Validation failed");
+        List<String> validationList = ex.getBindingResult().getFieldErrors().stream()
+                .map(fieldError -> fieldError.getField() + " : " + fieldError.getDefaultMessage())
+                .collect(Collectors.toList());
+        log.error("Validation error list : " + validationList);
+        String errorCode = "VE_101";
+        List<String> errorMessage = CollectionUtils.isEmpty(validationList)
+                ? Collections.singletonList("Error in validating fields")
+                : validationList;
+        ErrorResponseDto<?> errorResponseDto = new ErrorResponseDto<>(errorCode, errorMessage);
+        log.error("Service Exception | errorCode : {} | errorMessage : {} ", errorCode, errorMessage);
+        return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(errorResponseDto);
+    }
 
 //	@Override
 //	public ResponseEntity<Object> handleServletRequestBindingException(ServletRequestBindingException ex,
